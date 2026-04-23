@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../context/GlobalContext";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Zap, ArrowRight, ShieldCheck } from "lucide-react";
 
 export function Auth() {
   const { login, register } = useGlobalContext();
@@ -28,94 +28,103 @@ export function Auth() {
       if (res.error) return setError(res.error);
     }
 
-    // Success - redirect home
     navigate("/");
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-slate-50 flex items-center justify-center p-4 font-sans">
-      <div className="max-w-md w-full bg-white rounded-3xl p-10 shadow-sm border border-slate-200">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-md">
-            <span className="text-white font-bold text-3xl leading-none">F</span>
+    <div className="min-h-[calc(100vh-80px)] bg-neutral-50 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-emerald-100/40 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-[20rem] h-[20rem] bg-primary/10 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2" />
+
+      <div className="max-w-md w-full glass-card p-10 animate-fade-in relative z-10">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-200 rotate-3">
+             <Zap size={32} className="text-white fill-white" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">
-            {isRegister ? "Create Account" : "Platform Access"}
+          <h1 className="text-3xl font-bold text-neutral-900 mb-2 tracking-tight">
+            {isRegister ? "Join the Network" : "Secure Portal Access"}
           </h1>
-          <p className="text-slate-500 text-sm">
-            {isRegister ? "Register your enterprise logistics profile." : "Enter your credentials to securely authenticate."}
+          <p className="text-neutral-500 text-sm font-medium">
+            {isRegister ? "Start your organizational journey with FoodBridge." : "Authenticate to access your dashboard."}
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-100 text-red-600 text-sm font-semibold px-4 py-3 rounded-xl flex items-center gap-2">
-            <AlertCircle size={18} /> {error}
+          <div className="mb-8 bg-red-50 border border-red-100 text-red-600 text-sm font-bold px-4 py-4 rounded-xl flex items-center gap-3 animate-fade-in">
+            <AlertCircle size={20} /> {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {isRegister && (
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Full Name / Org Name</label>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Entity Name</label>
               <input
                 type="text"
-                placeholder="e.g. Spice Garden Hotel"
+                placeholder="e.g. Green Kitchen Org"
                 value={form.name}
                 onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-slate-50 focus:bg-white"
+                className="w-full px-5 py-4 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-neutral-100/50 hover:bg-neutral-100"
               />
             </div>
           )}
 
-          <div>
-            <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Email Address</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Email Address</label>
             <input
               type="email"
-              placeholder="you@organization.com"
+              placeholder="name@organization.com"
               value={form.email}
               onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-              className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-slate-50 focus:bg-white"
+              className="w-full px-5 py-4 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-neutral-100/50 hover:bg-neutral-100"
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Password</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Secure Password</label>
             <input
               type="password"
               placeholder="••••••••"
               value={form.password}
               onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-              className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-slate-50 focus:bg-white"
+              className="w-full px-5 py-4 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-neutral-100/50 hover:bg-neutral-100"
             />
           </div>
 
           {isRegister && (
-            <div>
-              <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Organizational Role</label>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Organizational Intent</label>
               <select
                 value={form.role}
                 onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
-                className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-slate-50 focus:bg-white cursor-pointer"
+                className="w-full px-5 py-4 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-white cursor-pointer hover:bg-neutral-50"
               >
-                <option value="restaurant">Corporate / Culinary (Restaurant/Hotel)</option>
-                <option value="volunteer">Logistics Fleet (Volunteer Hero)</option>
-                <option value="shelter">NGO / Shelter</option>
+                <option value="restaurant">Culinary Entity (Restaurant/Hotel)</option>
+                <option value="volunteer">Logistics Partner (Volunteer)</option>
+                <option value="shelter">Social Impact Hub (NGO/Shelter)</option>
               </select>
             </div>
           )}
 
-          <button type="submit" className="w-full py-4 mt-2 bg-slate-900 hover:bg-black text-white font-bold rounded-xl transition-all shadow-md">
-            {isRegister ? "Secure Registration" : "Authenticate"}
+          <button type="submit" className="btn-primary w-full py-4 mt-6 flex justify-between items-center group">
+            <span className="flex items-center gap-2">
+              <ShieldCheck size={18} />
+              {isRegister ? "Complete Onboarding" : "Authenticate Session"}
+            </span>
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </form>
 
-        <div className="mt-8 text-center text-sm font-medium text-slate-500">
-          {isRegister ? "Already an authorized partner? " : "Not part of the network? "}
+        <div className="mt-10 pt-8 border-t border-neutral-100 text-center">
+          <p className="text-neutral-500 text-sm font-medium">
+            {isRegister ? "Already part of the network?" : "New to the platform?"}
+          </p>
           <button 
             onClick={() => { setIsRegister(!isRegister); setError(""); }}
-            className="text-indigo-600 font-bold hover:underline"
+            className="mt-2 text-primary font-bold hover:underline inline-flex items-center gap-1"
           >
-            {isRegister ? "Log in here" : "Apply for access"}
+            {isRegister ? "Back to Login" : "Initialize New Account"}
           </button>
         </div>
       </div>
