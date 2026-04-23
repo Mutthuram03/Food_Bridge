@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+	Ranade font setup
+	1) Put your licensed font files here:
+		 public/fonts/Ranade-Regular.woff2
+		 public/fonts/Ranade-Medium.woff2
+		 public/fonts/Ranade-Bold.woff2
+	2) Tailwind's `font-sans` is configured to prefer "Ranade" (see tailwind.config.js).
+*/
+
+@font-face {
+	font-family: "Ranade";
+	src: url("/fonts/Ranade-Regular.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Ranade";
+	src: url("/fonts/Ranade-Medium.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Ranade";
+	src: url("/fonts/Ranade-Bold.woff2") format("woff2");
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@layer base {
+	html {
+		font-family: theme("fontFamily.sans");
+	}
+}
