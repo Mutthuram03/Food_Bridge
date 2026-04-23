@@ -1,5 +1,32 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { apiFetch, clearToken, getToken, setToken } from "../lib/api";
+import { 
+  auth, 
+  db 
+} from "../lib/firebase";
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "firebase/auth";
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  query, 
+  where, 
+  onSnapshot, 
+  doc, 
+  updateDoc, 
+  getDoc,
+  setDoc,
+  orderBy,
+  serverTimestamp,
+  increment
+} from "firebase/firestore";
 
 const GlobalContext = createContext();
 
@@ -14,152 +41,196 @@ export const GlobalProvider = ({ children }) => {
   const [shelters, setShelters] = useState([]);
   const [stats, setStats] = useState({ mealsSaved: 0, restaurants: 0, volunteers: 0, wasteReduced: 0 });
 
-  const refreshAll = async () => {
-    const [food, dels, sh, st] = await Promise.all([
-      apiFetch("/api/food-listings"),
-      apiFetch("/api/deliveries"),
-      apiFetch("/api/shelters"),
-      apiFetch("/api/stats"),
-    ]);
-    setFoodListings(food || []);
-    setDeliveries(dels || []);
-    setShelters(sh || []);
-    setStats(st || { mealsSaved: 0, restaurants: 0, volunteers: 0, wasteReduced: 0 });
-  };
-
+  // 1. Auth Listener
   useEffect(() => {
-    let cancelled = false;
-
-    const hydrate = async () => {
-      const token = getToken();
-      if (!token) {
-        if (!cancelled) setAuthReady(true);
-        return;
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Fetch additional user data (role) from Firestore
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          setCurrentUser({ ...user, ...userDoc.data(), id: user.uid });
+        } else {
+          setCurrentUser(user);
+        }
+      } else {
+        setCurrentUser(null);
       }
-
-      try {
-        const me = await apiFetch("/api/me", { auth: true });
-        if (!cancelled) setCurrentUser(me);
-      } catch {
-        // Token invalid/expired
-        clearToken();
-        if (!cancelled) setCurrentUser(null);
-      } finally {
-        if (!cancelled) setAuthReady(true);
-      }
-    };
-
-    hydrate();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    // Load app data even if not logged in
-    refreshAll().catch(() => {
-      // ignore; backend may not be running yet
+      setAuthReady(true);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => unsubscribe();
   }, []);
 
+  // 2. Real-time Data Listeners
+  useEffect(() => {
+    // Food Listings
+    const qFood = query(collection(db, "foodListings"), orderBy("createdAt", "desc"));
+    const unsubFood = onSnapshot(qFood, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setFoodListings(data);
+    });
+
+    // Shelters
+    const unsubShelters = onSnapshot(collection(db, "shelters"), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setShelters(data);
+    });
+
+    // Stats
+    const unsubStats = onSnapshot(doc(db, "app", "stats"), (snapshot) => {
+      if (snapshot.exists()) {
+        setStats(snapshot.data());
+      }
+    });
+
+    return () => {
+      unsubFood();
+      unsubShelters();
+      unsubStats();
+    };
+  }, []);
+
+  // 3. Specific Deliveries Listener (filtered for current user if volunteer)
+  useEffect(() => {
+    if (!currentUser) {
+      setDeliveries([]);
+      return;
+    }
+
+    let qDels;
+    if (currentUser.role === "volunteer") {
+      qDels = query(collection(db, "deliveries"), where("volunteerId", "==", currentUser.id));
+    } else if (currentUser.role === "restaurant") {
+      qDels = query(collection(db, "deliveries"), where("restaurantId", "==", currentUser.id));
+    } else {
+      qDels = query(collection(db, "deliveries"), where("shelterId", "==", currentUser.id));
+    }
+
+    const unsubDels = onSnapshot(qDels, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setDeliveries(data);
+    });
+
+    return () => unsubDels();
+  }, [currentUser]);
+
+  // Actions
   const register = async (name, email, password, role) => {
     try {
-      const res = await apiFetch("/api/auth/register", {
-        method: "POST",
-        body: { name, email, password, role },
-      });
-
-      setToken(res.token);
-      setCurrentUser(res.user);
-      await refreshAll();
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      const user = res.user;
+      
+      await updateProfile(user, { displayName: name });
+      
+      // Store additional info in Firestore
+      const userData = { name, email, role, createdAt: serverTimestamp() };
+      await setDoc(doc(db, "users", user.uid), userData);
+      
+      setCurrentUser({ ...user, ...userData, id: user.uid });
       return { success: true };
     } catch (e) {
-      return { error: e.message || "Registration failed" };
+      return { error: e.message };
     }
   };
 
   const login = async (email, password) => {
     try {
-      const res = await apiFetch("/api/auth/login", {
-        method: "POST",
-        body: { email, password },
-      });
-
-      setToken(res.token);
-      setCurrentUser(res.user);
-      await refreshAll();
+      await signInWithEmailAndPassword(auth, email, password);
       return { success: true };
     } catch (e) {
-      return { error: e.message || "Login failed" };
+      return { error: e.message };
     }
   };
 
-  const logout = () => {
-    clearToken();
-    setCurrentUser(null);
+  const loginWithGoogle = async (role = "volunteer") => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const res = await signInWithPopup(auth, provider);
+      const user = res.user;
+
+      // Check if user already exists in Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        // If new user, save their role and info
+        const userData = { 
+          name: user.displayName, 
+          email: user.email, 
+          role: role, 
+          createdAt: serverTimestamp() 
+        };
+        await setDoc(doc(db, "users", user.uid), userData);
+        setCurrentUser({ ...user, ...userData, id: user.uid });
+      }
+      
+      return { success: true };
+    } catch (e) {
+      return { error: e.message };
+    }
   };
+
+  const logout = () => signOut(auth);
 
   const postFood = async (food) => {
     try {
-      const listing = await apiFetch("/api/food-listings", {
-        method: "POST",
-        auth: true,
-        body: food,
+      await addDoc(collection(db, "foodListings"), {
+        ...food,
+        restaurantId: currentUser.id,
+        restaurant: currentUser.name,
+        status: "Available",
+        createdAt: serverTimestamp()
       });
-      setFoodListings(prev => [listing, ...prev]);
-    } catch {
-      // ignore
+    } catch (e) {
+      console.error("Error posting food:", e);
     }
   };
 
   const acceptPickup = async (foodId) => {
     try {
-      const res = await apiFetch(`/api/food-listings/${foodId}/accept`, {
-        method: "POST",
-        auth: true,
+      const foodRef = doc(db, "foodListings", foodId);
+      const foodSnap = await getDoc(foodRef);
+      const foodData = foodSnap.data();
+
+      // Update food status
+      await updateDoc(foodRef, { status: "In Transit" });
+
+      // Create delivery record
+      await addDoc(collection(db, "deliveries"), {
+        foodId,
+        food: foodData.name,
+        restaurantId: foodData.restaurantId,
+        restaurant: foodData.restaurant,
+        volunteerId: currentUser.id,
+        volunteer: currentUser.name,
+        status: "Picked Up",
+        acceptedAt: serverTimestamp()
       });
-      if (res?.listing) {
-        setFoodListings(prev => prev.map(f => (f.id === res.listing.id ? res.listing : f)));
-      }
-      if (res?.delivery) {
-        setDeliveries(prev => [res.delivery, ...prev]);
-      }
-    } catch {
-      // ignore
+    } catch (e) {
+      console.error("Error accepting pickup:", e);
     }
   };
 
   const confirmDelivery = async (deliveryId) => {
     try {
-      const res = await apiFetch(`/api/deliveries/${deliveryId}/confirm`, {
-        method: "POST",
-        auth: true,
+      const deliveryRef = doc(db, "deliveries", deliveryId);
+      const deliverySnap = await getDoc(deliveryRef);
+      const delData = deliverySnap.data();
+
+      // Update delivery
+      await updateDoc(deliveryRef, { 
+        status: "Delivered", 
+        deliveredAt: serverTimestamp() 
       });
 
-      if (res?.delivery) {
-        setDeliveries(prev => prev.map(d => (d.id === res.delivery.id ? res.delivery : d)));
-      }
-      if (res?.listing) {
-        setFoodListings(prev => prev.map(f => (f.id === res.listing.id ? res.listing : f)));
-      }
-      if (res?.stats) {
-        setStats(res.stats);
-      }
-    } catch {
-      // ignore
-    }
-  };
+      // Update original food listing
+      await updateDoc(doc(db, "foodListings", delData.foodId), { status: "Delivered" });
 
-  const markAsReached = async (deliveryId) => {
-    try {
-      const delivery = await apiFetch(`/api/deliveries/${deliveryId}/reached`, {
-        method: "POST",
-        auth: true,
+      // Update global stats
+      const statsRef = doc(db, "app", "stats");
+      await updateDoc(statsRef, {
+        mealsSaved: increment(1),
+        wasteReduced: increment(0.5) // Example value
       });
-      setDeliveries(prev => prev.map(d => (d.id === delivery.id ? delivery : d)));
-    } catch {
-      // ignore
+    } catch (e) {
+      console.error("Error confirming delivery:", e);
     }
   };
 
@@ -168,6 +239,7 @@ export const GlobalProvider = ({ children }) => {
     currentUser,
     login,
     register,
+    loginWithGoogle,
     logout,
     foodListings,
     deliveries,
@@ -176,14 +248,10 @@ export const GlobalProvider = ({ children }) => {
     postFood,
     acceptPickup,
     confirmDelivery,
-    markAsReached,
-    refreshAll,
   };
 
   return (
-    <GlobalContext.Provider value={{ 
-      ...contextValue
-    }}>
+    <GlobalContext.Provider value={contextValue}>
       {children}
     </GlobalContext.Provider>
   );
