@@ -11,7 +11,7 @@ export function Auth() {
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "volunteer" });
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -21,10 +21,10 @@ export function Auth() {
 
     if (isRegister) {
       if (!form.name) return setError("Organization or Full Name is required.");
-      const res = register(form.name, form.email, form.password, form.role);
+      const res = await register(form.name, form.email, form.password, form.role);
       if (res.error) return setError(res.error);
     } else {
-      const res = login(form.email, form.password);
+      const res = await login(form.email, form.password);
       if (res.error) return setError(res.error);
     }
 
