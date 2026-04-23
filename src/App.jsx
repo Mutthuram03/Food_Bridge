@@ -14,7 +14,8 @@ import { Impact, MapPage } from "./pages/ImpactAndMap";
 
 // Route Guards
 const ProtectedRoute = ({ children, allowedRole }) => {
-  const { currentUser } = useGlobalContext();
+  const { currentUser, authReady } = useGlobalContext();
+  if (!authReady) return null;
   if (!currentUser) return <Navigate to="/auth" replace />;
   if (allowedRole && currentUser.role !== allowedRole) return <Navigate to="/" replace />;
   return children;
