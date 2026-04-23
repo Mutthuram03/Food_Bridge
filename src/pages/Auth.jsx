@@ -4,7 +4,7 @@ import { useGlobalContext } from "../context/GlobalContext";
 import { AlertCircle, Zap, ArrowRight, ShieldCheck } from "lucide-react";
 
 export function Auth() {
-  const { login, register } = useGlobalContext();
+  const { login, register, loginWithGoogle } = useGlobalContext();
   const navigate = useNavigate();
 
   const [isRegister, setIsRegister] = useState(false);
@@ -28,6 +28,12 @@ export function Auth() {
       if (res.error) return setError(res.error);
     }
 
+    navigate("/");
+  };
+
+  const handleGoogleLogin = async () => {
+    const res = await loginWithGoogle(form.role);
+    if (res.error) return setError(res.error);
     navigate("/");
   };
 
@@ -92,20 +98,18 @@ export function Auth() {
             />
           </div>
 
-          {isRegister && (
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Organizational Intent</label>
-              <select
-                value={form.role}
-                onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
-                className="w-full px-5 py-4 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-white cursor-pointer hover:bg-neutral-50"
-              >
-                <option value="restaurant">Culinary Entity (Restaurant/Hotel)</option>
-                <option value="volunteer">Logistics Partner (Volunteer)</option>
-                <option value="shelter">Social Impact Hub (NGO/Shelter)</option>
-              </select>
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Organizational Intent</label>
+            <select
+              value={form.role}
+              onChange={e => setForm(p => ({ ...p, role: e.target.value }))}
+              className="w-full px-5 py-4 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-white cursor-pointer hover:bg-neutral-50"
+            >
+              <option value="restaurant">Culinary Entity (Restaurant/Hotel)</option>
+              <option value="volunteer">Logistics Partner (Volunteer)</option>
+              <option value="shelter">Social Impact Hub (NGO/Shelter)</option>
+            </select>
+          </div>
 
           <button type="submit" className="btn-primary w-full py-4 mt-6 flex justify-between items-center group">
             <span className="flex items-center gap-2">
@@ -115,6 +119,21 @@ export function Auth() {
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </form>
+
+        <div className="mt-6">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-200"></div></div>
+            <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest"><span className="bg-white px-4 text-neutral-400">Or continue with</span></div>
+          </div>
+
+          <button 
+            onClick={handleGoogleLogin}
+            className="w-full py-4 rounded-2xl border border-neutral-200 flex items-center justify-center gap-3 font-bold text-neutral-700 hover:bg-neutral-50 transition-all active:scale-[0.98]"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+            Google Enterprise
+          </button>
+        </div>
 
         <div className="mt-10 pt-8 border-t border-neutral-100 text-center">
           <p className="text-neutral-500 text-sm font-medium">
