@@ -1,42 +1,119 @@
+@import url("https://api.fontshare.com/v2/css?f[]=ranade@1,2,3,4,5,6,7,8,9,10,11,400,500,700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/*
-	Ranade font setup
-	1) Put your licensed font files here:
-		 public/fonts/Ranade-Regular.woff2
-		 public/fonts/Ranade-Medium.woff2
-		 public/fonts/Ranade-Bold.woff2
-	2) Tailwind's `font-sans` is configured to prefer "Ranade" (see tailwind.config.js).
-*/
-
-@font-face {
-	font-family: "Ranade";
-	src: url("/fonts/Ranade-Regular.woff2") format("woff2");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Ranade";
-	src: url("/fonts/Ranade-Medium.woff2") format("woff2");
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: "Ranade";
-	src: url("/fonts/Ranade-Bold.woff2") format("woff2");
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
+:root {
+  /* Premium Emerald & Slate Palette */
+  --primary: #059669;
+  --primary-dark: #064e3b;
+  --primary-light: #d1fae5;
+  --accent: #f59e0b;
+  --accent-light: #fef3c7;
+  --neutral-50: #f8fafc;
+  --neutral-100: #f1f5f9;
+  --neutral-200: #e2e8f0;
+  --neutral-300: #cbd5e1;
+  --neutral-400: #94a3b8;
+  --neutral-500: #64748b;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1e293b;
+  --neutral-900: #0f172a;
 }
 
 @layer base {
-	html {
-		font-family: theme("fontFamily.sans");
-	}
+  html {
+    font-family: "Ranade", sans-serif;
+    scroll-behavior: smooth;
+    @apply antialiased text-neutral-800 bg-neutral-50;
+  }
+
+  body {
+    @apply min-h-screen overflow-x-hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-bold;
+  }
+}
+
+@layer components {
+  /* Button Essentials */
+  .btn-premium {
+    @apply px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-primary text-white;
+    box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3);
+  }
+  .btn-primary:hover {
+    @apply bg-primary-dark -translate-y-1;
+    box-shadow: 0 20px 25px -5px rgba(5, 150, 105, 0.4);
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-white text-neutral-800 border border-neutral-200;
+  }
+  .btn-secondary:hover {
+    @apply bg-neutral-50 border-neutral-300 -translate-y-1 shadow-md;
+  }
+
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+  }
+
+  .premium-gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-br from-neutral-800 to-neutral-500;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+  .card-hover:hover {
+    @apply -translate-y-1;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-neutral-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 rounded-full border-2 border-transparent bg-clip-content hover:bg-neutral-400;
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
 }
