@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ExpiryBadge, StatusBadge } from "../components/ui/Badges";
 import { useGlobalContext } from "../context/GlobalContext";
-import { Store, Loader2, CheckCircle, ImagePlus, Navigation, UploadCloud } from "lucide-react";
+import { Store, Loader2, CheckCircle, Navigation, UploadCloud, PlusCircle, ClipboardCheck, History } from "lucide-react";
 
 export function Restaurants() {
   const { currentUser, foodListings, postFood, deliveries } = useGlobalContext();
@@ -35,7 +35,7 @@ export function Restaurants() {
         pickupTime: form.pickupTime || "ASAP",
         expiryMs: Date.now() + 3600000 * 2,
         location: form.location,
-        image: form.image // Pass base64 or emoji
+        image: form.image
       });
       setForm({ name: "", type: "", quantity: "", pickupTime: "", expiryTime: "", location: "", notes: "", image: "🍱" });
       setLoading(false);
@@ -45,143 +45,190 @@ export function Restaurants() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-8 py-8">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-md">
-              <Store size={24} />
+    <div className="min-h-screen bg-neutral-50 flex flex-col font-sans">
+      <div className="bg-white border-b border-neutral-200 px-6 py-10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-inner">
+              <Store size={32} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900">{currentUser?.name}</h1>
-              <p className="text-slate-500 text-sm">Corporate Food Recovery Portal</p>
+              <h1 className="text-3xl font-bold text-neutral-900 tracking-tight">{currentUser?.name}</h1>
+              <p className="text-neutral-500 font-medium flex items-center gap-2">
+                <ClipboardCheck size={16} /> Corporate Logistics Hub
+              </p>
             </div>
           </div>
-          <div className="text-sm font-bold bg-white text-slate-700 px-5 py-2.5 border border-slate-200 rounded-xl shadow-sm">
-             {myPickups.length} Active Contributions 
+          <div className="flex items-center gap-3">
+             <div className="px-5 py-3 bg-neutral-100 rounded-2xl border border-neutral-200 text-sm font-bold text-neutral-600">
+               {myPickups.length} Active Contributions
+             </div>
+             <button className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-emerald-200 hover:scale-105 transition-transform md:hidden">
+               <PlusCircle />
+             </button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 py-10">
-        <div className="grid lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl p-7 shadow-sm border border-slate-200 sticky top-24">
-              <h2 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">📝 Submit Surplus Log</h2>
+      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-12">
+        <div className="grid lg:grid-cols-12 gap-10">
+          
+          {/* Submission Form */}
+          <div className="lg:col-span-5">
+            <div className="glass-card p-8 sticky top-24">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-xl font-bold text-neutral-900">Surplus Manifest</h2>
+                <div className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-full">New Entry</div>
+              </div>
               
               {submitted && (
-                <div className="mb-6 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-3 rounded-xl flex items-center gap-2">
-                  <CheckCircle size={18} /> Documentation recorded successfully!
+                <div className="mb-6 bg-primary/10 border border-primary/20 text-primary text-sm font-bold px-4 py-4 rounded-2xl flex items-center gap-3 animate-fade-in">
+                  <CheckCircle size={20} /> Manifest synchronized successfully.
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { key: "name", label: "Inventory Name *", placeholder: "e.g. Assorted Bread", type: "text", required: true, span: 2 },
-                    { key: "quantity", label: "Quantity *", placeholder: "e.g. 50 lbs", type: "text", required: true, span: 1 },
-                    { key: "pickupTime", label: "Pickup Time", placeholder: "", type: "time", span: 1 },
-                    { key: "location", label: "Dispatch Location *", placeholder: "Branch Address", type: "text", required: true, span: 2 },
-                  ].map(f => (
-                    <div key={f.key} className={f.span === 2 ? "col-span-2" : "col-span-1"}>
-                      <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">{f.label}</label>
-                      <input
-                        type={f.type}
-                        required={f.required}
-                        placeholder={f.placeholder}
-                        value={form[f.key]}
-                        onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-slate-50 focus:bg-white"
-                      />
-                    </div>
-                  ))}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="col-span-2">
+                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Inventory Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Gourmet Assortment"
+                      value={form.name}
+                      onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+                      className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-neutral-50 focus:bg-white"
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Metric/Quantity</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 25 Units"
+                      value={form.quantity}
+                      onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))}
+                      className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-neutral-50 focus:bg-white"
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Pickup Window</label>
+                    <input
+                      type="time"
+                      value={form.pickupTime}
+                      onChange={e => setForm(p => ({ ...p, pickupTime: e.target.value }))}
+                      className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-neutral-50 focus:bg-white cursor-pointer"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Dispatch Point</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Street, City"
+                      value={form.location}
+                      onChange={e => setForm(p => ({ ...p, location: e.target.value }))}
+                      className="w-full px-5 py-3.5 rounded-2xl border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all bg-neutral-50 focus:bg-white"
+                    />
+                  </div>
                 </div>
                 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Inventory Photo</label>
-                  <label className="border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50 hover:bg-indigo-50/30 rounded-xl p-8 text-center text-slate-400 hover:text-indigo-600 text-sm cursor-pointer transition-all flex flex-col items-center gap-3 relative overflow-hidden group">
+                  <label className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Inventory Proof</label>
+                  <label className="relative flex flex-col items-center justify-center py-10 px-4 mt-2 border-2 border-dashed border-neutral-200 hover:border-primary hover:bg-primary/[0.02] rounded-3xl cursor-pointer group transition-all">
                     {form.image && form.image.length > 10 ? (
-                       <img src={form.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-40 transition-opacity" />
+                       <div className="absolute inset-2 overflow-hidden rounded-2xl">
+                          <img src={form.image} alt="Preview" className="w-full h-full object-cover opacity-90 group-hover:opacity-40 transition-opacity" />
+                       </div>
                     ) : (
-                       <UploadCloud size={28} />
+                       <UploadCloud size={32} className="text-neutral-300 group-hover:text-primary transition-colors mb-3" />
                     )}
-                    <span className="relative z-10 font-medium">Capture or upload photo</span>
+                    <span className="text-sm font-bold text-neutral-400 group-hover:text-primary relative z-10 transition-colors uppercase tracking-widest">Select Visual</span>
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                   </label>
                 </div>
                 
-                <button type="submit" disabled={loading} className="w-full py-3.5 mt-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
-                  {loading ? <><Loader2 size={18} className="animate-spin" /> Submitting...</> : "Record & Broadcast"}
+                <button type="submit" disabled={loading} className="btn-primary w-full py-4 mt-4 flex items-center justify-center gap-3">
+                  {loading ? <Loader2 size={18} className="animate-spin" /> : <PlusCircle size={18} />}
+                  Record & Dispatch
                 </button>
               </form>
             </div>
           </div>
 
-          <div className="lg:col-span-3">
-            <h2 className="text-lg font-black text-slate-900 mb-6">Log Interface</h2>
+          {/* Activity Log */}
+          <div className="lg:col-span-7">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+                <History size={20} className="text-primary" /> Active Logistics Log
+              </h2>
+            </div>
+            
             {myPickups.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200 text-slate-400">
-                <Store className="mx-auto mb-4 opacity-50" size={32} />
-                <p>No active inventory logs generated.</p>
+              <div className="text-center py-24 glass-card border-dashed">
+                <ClipboardCheck className="mx-auto mb-4 text-neutral-300" size={48} />
+                <p className="text-neutral-500 font-bold">No operational history found.</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-6">
+              <div className="space-y-6">
                 {myPickups.map(item => {
                   const trackData = deliveries.find(d => d.foodId === item.id);
                   const isReached = trackData?.status === "Reached Shelter";
                   
                   return (
-                    <div key={item.id} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col gap-5 transition-shadow hover:shadow-md">
-                      
-                      <div className="flex sm:items-start justify-between gap-4 border-b border-slate-100 pb-5">
-                         <div className="flex items-start gap-4">
-                            <div className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-4xl overflow-hidden shadow-inner flex-shrink-0">
+                    <div key={item.id} className="glass-card card-hover p-8 animate-fade-in">
+                      <div className="flex flex-col sm:flex-row items-start justify-between gap-6 mb-8 pb-6 border-b border-neutral-100">
+                         <div className="flex items-start gap-5">
+                            <div className="w-20 h-20 bg-neutral-100 rounded-2xl flex items-center justify-center text-4xl overflow-hidden shadow-inner border border-neutral-100 flex-shrink-0">
                               {item.image && item.image.length > 10 ? <img src={item.image} className="w-full h-full object-cover" alt="food" /> : (item.image || "🍱")}
                             </div>
-                            <div>
-                               <div className="font-black text-slate-900 text-lg mb-1">{item.name}</div>
-                               <div className="text-xs font-medium text-slate-500 mb-2">{item.location}</div>
-                               <div className="inline-flex bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-md">📦 {item.quantity}</div>
+                            <div className="space-y-1">
+                               <div className="font-bold text-neutral-900 text-xl tracking-tight">{item.name}</div>
+                               <div className="text-sm font-medium text-neutral-400">{item.location}</div>
+                               <div className="inline-flex bg-neutral-100 text-neutral-600 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-neutral-200">
+                                 Unit Capacity: {item.quantity}
+                               </div>
                             </div>
                          </div>
-                         <div className="flex flex-col items-end gap-2">
+                         <div className="flex sm:flex-col items-center sm:items-end gap-3 self-stretch sm:self-auto">
                             <StatusBadge status={item.status} />
                             {item.status === "Available" && <ExpiryBadge expiryMs={item.expiryMs} />}
                          </div>
                       </div>
 
+                      {/* Status Specific UI */}
                       {item.status === "Assigned" && trackData && !isReached && (
-                        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                               <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center"><Navigation size={18}/></div>
+                        <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                               <div className="w-12 h-12 bg-white text-primary rounded-xl flex items-center justify-center shadow-sm border border-primary/10"><Navigation size={22}/></div>
                                <div>
-                                  <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-0.5">Dispatched</div>
-                                  <div className="text-sm font-bold text-slate-900">{trackData.volunteer} deployed</div>
+                                  <div className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Fleet Deployment</div>
+                                  <div className="text-sm font-bold text-neutral-900">Partner <span className="text-primary">{trackData.volunteer}</span> engaged</div>
                                </div>
                             </div>
                             <div className="text-right">
-                               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">ETA</div>
-                               <div className="text-lg font-black text-indigo-700">{trackData.eta}</div>
+                               <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1">Transit ETA</div>
+                               <div className="text-2xl font-bold text-primary tracking-tighter">{trackData.eta}</div>
                             </div>
                         </div>
                       )}
 
                       {isReached && item.status !== "Delivered" && (
-                         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
-                            <div className="w-10 h-10 bg-yellow-100 text-yellow-700 rounded-lg flex items-center justify-center"><Navigation size={18}/></div>
+                         <div className="bg-amber-50 border border-amber-200/50 rounded-2xl p-5 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white text-amber-500 rounded-xl flex items-center justify-center shadow-sm border border-amber-200"><Navigation size={22}/></div>
                             <div>
-                               <div className="text-sm font-bold text-slate-900">Volunteer Arrived at Shelter</div>
-                               <div className="text-xs font-medium text-yellow-800">Awaiting confirmation from Shelter admin.</div>
+                               <div className="text-sm font-bold text-neutral-900">On-Site: Social Impact Hub</div>
+                               <div className="text-xs font-bold text-amber-600 uppercase tracking-wider mt-0.5">Awaiting shelter sign-off</div>
                             </div>
                         </div>
                       )}
 
                       {item.status === "Delivered" && (
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-center gap-3">
-                            <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center"><CheckCircle size={18}/></div>
+                        <div className="bg-emerald-50 border border-emerald-200/50 rounded-2xl p-5 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white text-emerald-500 rounded-xl flex items-center justify-center shadow-sm border border-emerald-200"><CheckCircle size={22}/></div>
                             <div>
-                               <div className="text-sm font-bold text-slate-900">Delivery Concluded</div>
-                               <div className="text-xs font-medium text-emerald-700">Audit complete. Nutrition successfully re-allocated.</div>
+                               <div className="text-sm font-bold text-neutral-900">Archive: Reallocated</div>
+                               <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mt-0.5">Community nutrition impact validated</div>
                             </div>
                         </div>
                       )}
