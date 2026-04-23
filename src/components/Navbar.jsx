@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, Zap } from "lucide-react";
 import { useGlobalContext } from "../context/GlobalContext";
 
 export function Navbar() {
@@ -18,90 +18,90 @@ export function Navbar() {
   if (!currentUser) {
     links = [
       { name: "Home", path: "/" },
-      { name: "Impact Report", path: "/impact" }
+      { name: "Impact report", path: "/impact" }
     ];
   } else if (currentUser.role === "restaurant") {
     links = [
       { name: "Inventory", path: "/restaurants" },
-      { name: "Impact Report", path: "/impact" }
+      { name: "Impact report", path: "/impact" }
     ];
   } else if (currentUser.role === "volunteer") {
     links = [
       { name: "Route Map", path: "/map" },
-      { name: "Active Operations", path: "/volunteers" },
-      { name: "Impact Report", path: "/impact" }
+      { name: "Operations", path: "/volunteers" },
+      { name: "Impact", path: "/impact" }
     ];
   } else if (currentUser.role === "shelter") {
     links = [
-      { name: "Shipment Manifest", path: "/shelters" }
+      { name: "Manifest", path: "/shelters" }
     ];
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm font-sans">
+    <nav className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-neutral-200/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 md:w-9 md:h-9 bg-slate-900 rounded-lg flex items-center justify-center shadow-inner">
-              <span className="text-white font-black text-lg md:text-xl leading-none">F</span>
+        <div className="flex items-center justify-between h-20">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200 rotate-3 hover:rotate-0 transition-transform">
+              <Zap size={20} className="text-white fill-white" />
             </div>
-            <span className="font-black text-xl tracking-tight text-slate-900">Food<span className="text-slate-500">Bridge</span></span>
+            <span className="font-bold text-2xl tracking-tighter text-neutral-900">Food<span className="text-primary">Bridge</span></span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
             {links.map(l => (
               <Link 
                 key={l.name} 
                 to={l.path} 
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${location.pathname === l.path ? "bg-slate-100 text-slate-900 border border-slate-200" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
+                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${location.pathname === l.path ? "text-primary bg-primary/5" : "text-neutral-500 hover:text-neutral-900"}`}
               >
                 {l.name}
               </Link>
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
             {!currentUser ? (
-              <Link to="/auth" className="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 hover:bg-black rounded-xl transition-all shadow-sm flex items-center gap-2">
-                <User size={16} /> Secure Portal
+              <Link to="/auth" className="btn-primary !py-2.5 !px-6 text-sm">
+                Login
               </Link>
             ) : (
-              <div className="flex items-center gap-4">
-                <div className="text-xs text-right hidden lg:block">
-                  <div className="text-slate-500 font-bold uppercase tracking-wider">Active Session</div>
-                  <div className="font-black text-slate-900">{currentUser.name}</div>
+              <div className="flex items-center gap-3 pl-4 border-l border-neutral-200">
+                <div className="text-right">
+                  <div className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest leading-none mb-1">Authenticated</div>
+                  <div className="font-bold text-neutral-900 text-sm leading-none">{currentUser.name}</div>
                 </div>
-                <button onClick={handleLogout} className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all border border-transparent hover:border-slate-200">
+                <button onClick={handleLogout} className="w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
                   <LogOut size={18} />
                 </button>
               </div>
             )}
           </div>
 
-          <button className="md:hidden p-2 rounded-lg hover:bg-slate-100 text-slate-600 border border-slate-200" onClick={() => setMenuOpen(!menuOpen)}>
+          <button className="md:hidden p-2.5 rounded-xl bg-neutral-100 text-neutral-600" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
         {menuOpen && (
-          <div className="md:hidden pb-4 flex flex-col gap-1 border-t border-slate-100 pt-2 bg-slate-50 rounded-b-xl px-2">
+          <div className="md:hidden pb-6 flex flex-col gap-1 pt-2 animate-fade-in">
             {links.map(l => (
               <Link 
                 key={l.name} 
                 to={l.path} 
                 onClick={() => setMenuOpen(false)}
-                className={`px-4 py-3.5 rounded-xl text-sm font-bold ${location.pathname === l.path ? "bg-white text-slate-900 shadow-sm border border-slate-200" : "text-slate-600"}`}
+                className={`px-4 py-4 rounded-2xl text-base font-bold ${location.pathname === l.path ? "bg-primary/5 text-primary" : "text-neutral-600 active:bg-neutral-50"}`}
               >
                 {l.name}
               </Link>
             ))}
             {!currentUser ? (
-              <Link to="/auth" onClick={() => setMenuOpen(false)} className="mx-2 mt-3 px-4 py-3.5 text-sm font-bold text-center text-white bg-slate-900 rounded-xl shadow-md border border-black">
-                Secure Portal
+              <Link to="/auth" onClick={() => setMenuOpen(false)} className="mt-4 mx-2 btn-primary">
+                Login
               </Link>
             ) : (
-              <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="mx-2 mt-3 px-4 py-3 text-sm font-bold text-center text-red-600 bg-red-50 rounded-xl flex items-center justify-center gap-2 border border-red-100">
-                <LogOut size={18} /> Terminate Session
+              <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="mt-4 mx-2 px-4 py-4 rounded-2xl text-base font-bold text-red-500 bg-red-50 border border-red-100 flex items-center justify-center gap-2">
+                <LogOut size={18} /> Sign Out
               </button>
             )}
           </div>
